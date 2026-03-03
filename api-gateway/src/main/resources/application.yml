@@ -1,0 +1,32 @@
+server:
+  port: 8000
+
+spring:
+  application:
+    name: api-gateway
+
+  config:
+    import: optional:configserver:http://localhost:8888
+
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
+
+      routes:
+        - id: user-service
+          uri: lb://user-service
+          predicates:
+            - Path=/users/**
+
+        - id: formation-service
+          uri: lb://formation-service
+          predicates:
+            - Path=/formations/**
+
+        - id: profile-service
+          uri: lb://profile-service
+          predicates:
+            - Path=/profiles/**
