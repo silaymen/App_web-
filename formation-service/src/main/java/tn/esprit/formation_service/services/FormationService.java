@@ -19,7 +19,9 @@ public class FormationService {
     // CREATE
     public Formation create(Formation formation) {
         formation.setDateCreation(LocalDate.now());
-        formation.setActive(true);
+        if (formation.getActive() == null) {
+            formation.setActive(Boolean.TRUE);
+        }
         return repository.save(formation);
     }
 
@@ -42,6 +44,9 @@ public class FormationService {
         formation.setDescription(updated.getDescription());
         formation.setCategorie(updated.getCategorie());
         formation.setPrix(updated.getPrix());
+        if (updated.getActive() != null) {
+            formation.setActive(updated.getActive());
+        }
 
         return repository.save(formation);
     }
@@ -51,25 +56,32 @@ public class FormationService {
         repository.deleteById(id);
     }
 
-    // 🔥 Pagination
     public Page<Formation> getActiveFormations(int page, int size) {
         return repository.findByActiveTrue(PageRequest.of(page, size));
     }
 
-    // 🔥 Recherche
     public List<Formation> searchByTitle(String title) {
         return repository.findByTitreContainingIgnoreCase(title);
     }
 
-    // 🔥 Filtre catégorie
     public List<Formation> filterByCategory(String categorie) {
         return repository.findByCategorie(categorie);
     }
 
-    // 🔥 Désactiver
     public Formation deactivate(Long id) {
         Formation formation = getById(id);
         formation.setActive(false);
         return repository.save(formation);
+    }
+
+    public Formation activate(Long id) {
+        Formation formation = getById(id);
+        formation.setActive(true);
+        return repository.save(formation);
+    }
+
+    /** Formations dont le prix est inférieur ou égal au plafond (métier). */
+    public List<Formation> findByMaxPrice(double prixMax) {
+        return repository.findByPrixLessThanEqual(prixMax);
     }
 }

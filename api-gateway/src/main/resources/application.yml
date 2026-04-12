@@ -4,9 +4,11 @@ server:
 spring:
   application:
     name: api-gateway
+  autoconfigure:
+    exclude: org.springframework.boot.autoconfigure.security.reactive.ReactiveSecurityAutoConfiguration
 
   config:
-    import: optional:configserver:http://localhost:8888
+    import: optional:configserver:${SPRING_CONFIG_IMPORT:http://localhost:8888}
 
   cloud:
     gateway:
@@ -14,6 +16,17 @@ spring:
         locator:
           enabled: true
           lower-case-service-id: true
+      globalcors:
+        corsConfigurations:
+          '[/**]':
+            allowedOrigins: "http://localhost:4200"
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - OPTIONS
+            allowedHeaders: "*"
       routes:
         - id: formation-service
           uri: lb://formation-service
@@ -23,13 +36,21 @@ spring:
           uri: lb://formation-service
           predicates:
             - Path=/v3/api-docs/**
+        - id: emploidutemps-service
+          uri: lb://emploidutemps-service
+          predicates:
+            - Path=/seances/**
+        - id: joboffre-service
+          uri: lb://joboffre-service
+          predicates:
+            - Path=/joboffers/**
 
 eureka:
   client:
     register-with-eureka: true
     fetch-registry: true
     service-url:
-      defaultZone: http://localhost:8761/eureka/
+      defaultZone: ${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE:http://localhost:8761/eureka/}
 
   instance:
     prefer-ip-address: true

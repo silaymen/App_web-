@@ -26,7 +26,8 @@ public class Formation {
 
     private Double prix;
 
-    private boolean active;
+    /** Wrapper: si absent du JSON en PUT, on ne réécrit pas l’état en base (évite de forcer false). */
+    private Boolean active;
 
     private LocalDate dateCreation;
 }
