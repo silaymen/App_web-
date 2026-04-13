@@ -1,0 +1,263 @@
+
+
+networks:
+  ezlearning-net:
+    driver: bridge
+
+volumes:
+  mysql-data:
+  rabbitmq-data:
+
+services:
+
+  # ── 1. MySQL ──────────────────────────────────────────────────────────────
+  mysql:
+    image: mysql:8.0
+    container_name: mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: ezlearning_formation_db
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      - ezlearning-net
+    mem_limit: 512m
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  # ── 2. RabbitMQ ───────────────────────────────────────────────────────────
+  rabbitmq:
+    image: rabbitmq:3.12-management
+    container_name: rabbitmq
+    restart: unless-stopped
+    environment:
+      - RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS=-rabbit vm_memory_high_watermark 0.4
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    networks:
+      - ezlearning-net
+    mem_limit: 512m
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  # ── 3. Config Server ──────────────────────────────────────────────────────
+  config-server:
+    build:
+      context: ./config-server
+      dockerfile: Dockerfile
+    image: ezlearning/config-server:latest
+    container_name: config-server
+    restart: unless-stopped
+    ports:
+      - "8888:8888"
+    environment:
+      - JAVA_TOOL_OPTIONS=-Xmx192m -Xms64m
+    networks:
+      - ezlearning-net
+    mem_limit: 384m
+    healthcheck:
+      test: ["CMD-SHELL", "nc -z localhost 8888 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+      start_period: 40s
+
+  # ── 4. Eureka Server ──────────────────────────────────────────────────────
+  eureka-server:
+    build:
+      context: ./eureka-server
+      dockerfile: Dockerfile
+    image: ezlearning/eureka-server:latest
+    container_name: eureka-server
+    restart: unless-stopped
+    ports:
+      - "8761:8761"
+    environment:
+      - JAVA_TOOL_OPTIONS=-Xmx192m -Xms64m
+      - SPRING_CONFIG_IMPORT=optional:configserver:http://config-server:8888
+      - EUREKA_INSTANCE_HOSTNAME=eureka-server
+    networks:
+      - ezlearning-net
+    mem_limit: 384m
+    depends_on:
+      config-server:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "nc -z localhost 8761 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+      start_period: 40s
+
+  # ── 5. API Gateway (before microservices — Postman / clients use :8000 only) ─
+  api-gateway:
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    image: ezlearning/api-gateway:latest
+    container_name: api-gateway
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - JAVA_TOOL_OPTIONS=-Xmx256m -Xms64m
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+      - SPRING_CONFIG_IMPORT=optional:configserver:http://config-server:8888
+    networks:
+      - ezlearning-net
+    mem_limit: 512m
+    depends_on:
+      config-server:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "nc -z localhost 8000 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+      start_period: 60s
+
+  # ── 6. Formation Service (no host port — use gateway /formations/**) ───────
+  formation-service:
+    build:
+      context: ./formation-service
+      dockerfile: Dockerfile
+    image: ezlearning/formation-service:latest
+    container_name: formation-service
+    restart: unless-stopped
+    environment:
+      - JAVA_TOOL_OPTIONS=-Xmx256m -Xms64m
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/ezlearning_formation_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=root
+      - SPRING_RABBITMQ_HOST=rabbitmq
+      - SPRING_RABBITMQ_PORT=5672
+      - SPRING_RABBITMQ_USERNAME=guest
+      - SPRING_RABBITMQ_PASSWORD=guest
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+      - SPRING_CONFIG_IMPORT=optional:configserver:http://config-server:8888
+    networks:
+      - ezlearning-net
+    mem_limit: 512m
+    depends_on:
+      mysql:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+      api-gateway:
+        condition: service_healthy
+
+  # ── 7. Emploi du Temps (no host port — use gateway /seances/**) ────────────
+  emploidutemps-service:
+    build:
+      context: ./Gestion-EmploiDuTemps
+      dockerfile: Dockerfile
+    image: ezlearning/emploidutemps-service:latest
+    container_name: emploidutemps-service
+    restart: unless-stopped
+    environment:
+      - JAVA_TOOL_OPTIONS=-Xmx256m -Xms64m
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/ezlearning_emploidutemps_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=root
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+      - SPRING_CONFIG_IMPORT=optional:configserver:http://config-server:8888
+    networks:
+      - ezlearning-net
+    mem_limit: 512m
+    depends_on:
+      mysql:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+      api-gateway:
+        condition: service_healthy
+
+  # ── 8. Job Offre (no host port — use gateway /joboffers/**) ───────────────
+  joboffre-service:
+    build:
+      context: ./GES_JobOffre
+      dockerfile: Dockerfile
+    image: ezlearning/joboffre-service:latest
+    container_name: joboffre-service
+    restart: unless-stopped
+    environment:
+      - JAVA_TOOL_OPTIONS=-Xmx256m -Xms64m
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/ezlearning_joboffre_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=root
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+      - SPRING_CONFIG_IMPORT=optional:configserver:http://config-server:8888
+    networks:
+      - ezlearning-net
+    mem_limit: 512m
+    depends_on:
+      mysql:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+      api-gateway:
+        condition: service_healthy
+
+  # ── 9. Certifications (no host port — use gateway /certifications/**) ─────
+  certification-service:
+    build:
+      context: ./certifications-service
+      dockerfile: Dockerfile
+    image: ezlearning/certification-service:latest
+    container_name: certification-service
+    restart: unless-stopped
+    environment:
+      - JAVA_TOOL_OPTIONS=-Xmx256m -Xms64m
+      - SERVER_PORT=8091
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/ezlearning_certifications_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=root
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+      - SPRING_CONFIG_IMPORT=optional:configserver:http://config-server:8888
+
+    networks:
+      - ezlearning-net
+    mem_limit: 512m
+    depends_on:
+      mysql:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+      api-gateway:
+        condition: service_healthy
+
+  # ── 10. Angular frontend ───────────────────────────────────────────────────
+  # API from browser: http://localhost:8000 (gateway). UI: http://localhost:4200
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    image: ezlearning/frontend:latest
+    container_name: frontend
+    restart: unless-stopped
+    ports:
+      - "4200:80"
+    networks:
+      - ezlearning-net
+    mem_limit: 128m
+    depends_on:
+      api-gateway:
+        condition: service_healthy
+      certification-service:
+        condition: service_started
