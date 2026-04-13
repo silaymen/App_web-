@@ -1,0 +1,41 @@
+<div class="admin-wrapper">
+  <!-- Sidebar -->
+  <aside class="sidebar glass-card">
+    <div class="logo">
+      <span class="logo-icon">💠</span>
+      <h2>Backoffice</h2>
+    </div>
+    <nav>
+      <a routerLink="/dashboard" routerLinkActive="active" class="nav-item">
+        <span class="icon">📊</span> Dashboard
+      </a>
+      <a routerLink="/certifications" routerLinkActive="active" class="nav-item">
+        <span class="icon">📜</span> Certifications
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-pill">
+        <div class="avatar">Admin</div>
+        <span>Suzan</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="content-area">
+    <header class="top-nav glass-card">
+      <div class="search-bar">
+        <span>🔍</span>
+        <input type="text" placeholder="Global search...">
+      </div>
+      <div class="nav-actions">
+        <button class="icon-btn">🔔</button>
+        <button class="icon-btn">⚙️</button>
+      </div>
+    </header>
+
+    <div class="router-outlet-container animate-fade-in">
+      <router-outlet></router-outlet>
+    </div>
+  </main>
+</div>

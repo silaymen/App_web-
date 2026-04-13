@@ -1,0 +1,98 @@
+<div class="content-header animate-fade-in">
+  <div>
+    <h1>{{ isEdit ? 'Edit' : 'New' }} Certification</h1>
+    <p class="text-muted">{{ isEdit ? 'Modify existing certification details' : 'Create a new certification program' }}</p>
+  </div>
+  <button class="btn-primary" routerLink="/certifications">
+    <span>←</span> Back to List
+  </button>
+</div>
+
+<div class="form-container glass-card animate-fade-in">
+  <form (ngSubmit)="saveCertification()" #certForm="ngForm">
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Certification Name</label>
+        <input 
+          type="text" 
+          class="form-input" 
+          name="name" 
+          [(ngModel)]="certification.name" 
+          required 
+          placeholder="e.g. AWS Certified Solutions Architect"
+        >
+      </div>
+
+      <div class="form-group">
+        <label>Version</label>
+        <input 
+          type="text" 
+          class="form-input" 
+          name="version" 
+          [(ngModel)]="certification.version" 
+          placeholder="e.g. v1.0"
+        >
+      </div>
+
+      <div class="form-group">
+        <label>Validity (Days)</label>
+        <input 
+          type="number" 
+          class="form-input" 
+          name="validityDays" 
+          [(ngModel)]="certification.validityDays" 
+          min="0"
+        >
+      </div>
+
+      <div class="form-group">
+        <label>Issue Date</label>
+        <input 
+          type="date" 
+          class="form-input" 
+          name="issueDate" 
+          [(ngModel)]="certification.issueDate" 
+        >
+      </div>
+
+      <div class="form-group">
+        <label>Expiry Date</label>
+        <input 
+          type="date" 
+          class="form-input" 
+          name="expiryDate" 
+          [(ngModel)]="certification.expiryDate" 
+        >
+      </div>
+
+      <div class="form-group full-width">
+        <label>Owner Email</label>
+        <input 
+          type="email" 
+          class="form-input" 
+          name="ownerEmail" 
+          [(ngModel)]="certification.ownerEmail" 
+          placeholder="e.g. admin@domain.com"
+        >
+      </div>
+
+      <div class="form-group full-width">
+        <label>Description</label>
+        <textarea 
+          class="form-input" 
+          name="description" 
+          [(ngModel)]="certification.description" 
+          rows="4" 
+          placeholder="Provide a detailed description of the certification..."
+        ></textarea>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button type="button" class="icon-btn" routerLink="/certifications">Cancel</button>
+      <button type="submit" class="btn-primary" [disabled]="!certForm.form.valid">
+        {{ isEdit ? 'Update Certification' : 'Create Certification' }}
+      </button>
+    </div>
+  </form>
+</div>

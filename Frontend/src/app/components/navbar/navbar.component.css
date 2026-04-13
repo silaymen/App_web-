@@ -1,0 +1,29 @@
+.navbar {
+  height: 70px;
+  background: rgba(30, 41, 59, 0.8);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 2rem;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+.search-bar input {
+  background: rgba(0,0,0,0.2);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: white;
+  padding: 0.6rem 1.2rem;
+  border-radius: 20px;
+  width: 300px;
+  outline: none;
+}
+.profile { display: flex; align-items: center; gap: 1rem; }
+.avatar {
+  width: 40px; height: 40px; border-radius: 50%;
+  background: var(--primary); display: flex;
+  align-items: center; justify-content: center;
+  font-weight: bold;
+}

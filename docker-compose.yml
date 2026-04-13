@@ -1,0 +1,79 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: mysql-db
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: ""
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+      MYSQL_DATABASE: certifications_db
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+    networks:
+      - micro-network
+
+  eureka-server:
+    build:
+      context: ./Eureka-Server
+    container_name: eureka-server
+    ports:
+      - "8761:8761"
+    networks:
+      - micro-network
+
+  config-server:
+    build:
+      context: ./Config-Server
+    container_name: config-server
+    ports:
+      - "8888:8888"
+    volumes:
+      - C:/config-repo:/config-repo
+    environment:
+      SPRING_PROFILES_ACTIVE: native
+      SPRING_CLOUD_CONFIG_SERVER_NATIVE_SEARCH_LOCATIONS: file:/config-repo
+    networks:
+      - micro-network
+    depends_on:
+      eureka-server:
+        condition: service_started
+
+  certification-service:
+    build:
+      context: ./Certifications/Certifications/Certifications
+    container_name: certification-service
+    ports:
+      - "8082:8082"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/certifications_db?createDatabaseIfNotExist=true&useSSL=false
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka
+    networks:
+      - micro-network
+    depends_on:
+      mysql:
+        condition: service_healthy
+      eureka-server:
+        condition: service_started
+
+  gateway-server:
+    build:
+      context: ./Gateway-Server
+    container_name: gateway-server
+    ports:
+      - "8085:8085"
+    environment:
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka
+    networks:
+      - micro-network
+    depends_on:
+      eureka-server:
+        condition: service_started
+      certification-service:
+        condition: service_started
+
+networks:
+  micro-network:
+    driver: bridge

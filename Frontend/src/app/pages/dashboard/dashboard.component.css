@@ -1,0 +1,12 @@
+.metrics { display: flex; gap: 2rem; margin-top: 2rem; }
+.metric-card {
+  background: var(--panel-bg);
+  padding: 2rem; border-radius: 12px;
+  flex: 1; border: 1px solid rgba(255,255,255,0.05);
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  transition: transform 0.2s;
+}
+.metric-card:hover { transform: translateY(-5px); }
+.metric-card h3 { color: #94a3b8; font-size: 1rem; margin: 0 0 1rem 0; }
+.value { font-size: 2.5rem; font-weight: bold; }
+.text-success { color: #10b981; }

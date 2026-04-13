@@ -1,0 +1,185 @@
+<!-- ===== TOAST NOTIFICATION ===== -->
+<div *ngIf="toastMessage" class="toast" [ngClass]="toastType" role="alert">
+  {{ toastType === 'success' ? '✅' : '❌' }} {{ toastMessage }}
+</div>
+
+<!-- ===== PAGE HEADER ===== -->
+<div class="header-row animate-fade-in">
+  <div class="header-content">
+    <h1>Certifications</h1>
+    <div class="search-box">
+      <span class="search-icon">🔍</span>
+      <input
+        id="cert-search-input"
+        type="text"
+        [(ngModel)]="searchTerm"
+        (ngModelChange)="onSearchChange()"
+        placeholder="Search name, email, version..."
+      >
+      <button *ngIf="searchTerm" class="clear-btn" (click)="clearSearch()" title="Clear search">✕</button>
+    </div>
+  </div>
+  <button id="btn-add-certification" class="btn-primary" (click)="openAddModal()">
+    + Add New
+  </button>
+</div>
+
+<!-- ===== OFFLINE BANNER ===== -->
+<div *ngIf="error" class="alert warning animate-fade-in">
+  {{ error }}
+</div>
+
+<!-- ===== LOADING ===== -->
+<div *ngIf="loading" class="loading animate-fade-in">
+  <div class="spinner"></div>
+  Loading certifications...
+</div>
+
+<!-- ===== TABLE ===== -->
+<div class="table-container glass-card animate-fade-in" *ngIf="!loading">
+
+  <!-- row count -->
+  <div class="table-meta">
+    <span class="count-badge">{{ displayedCertifications.length }} result{{ displayedCertifications.length !== 1 ? 's' : '' }}</span>
+    <span *ngIf="searchTerm" class="filter-tag">Filtered: "{{ searchTerm }}"</span>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th (click)="onSort('id')" class="sortable" id="sort-id">
+          ID <span class="sort-arrow">{{ sortBy === 'id' ? (sortDir === 'asc' ? '↑' : '↓') : '↕' }}</span>
+        </th>
+        <th (click)="onSort('name')" class="sortable" id="sort-name">
+          Name <span class="sort-arrow">{{ sortBy === 'name' ? (sortDir === 'asc' ? '↑' : '↓') : '↕' }}</span>
+        </th>
+        <th (click)="onSort('version')" class="sortable" id="sort-version">
+          Version <span class="sort-arrow">{{ sortBy === 'version' ? (sortDir === 'asc' ? '↑' : '↓') : '↕' }}</span>
+        </th>
+        <th (click)="onSort('issueDate')" class="sortable" id="sort-issued">
+          Issued <span class="sort-arrow">{{ sortBy === 'issueDate' ? (sortDir === 'asc' ? '↑' : '↓') : '↕' }}</span>
+        </th>
+        <th (click)="onSort('expiryDate')" class="sortable" id="sort-expiry">
+          Expires <span class="sort-arrow">{{ sortBy === 'expiryDate' ? (sortDir === 'asc' ? '↑' : '↓') : '↕' }}</span>
+        </th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let cert of displayedCertifications; trackBy: trackById">
+        <td class="id-cell">#{{ cert.id }}</td>
+        <td class="cert-name-cell">
+          <span class="cert-name">{{ cert.name }}</span>
+          <div class="subtext" *ngIf="cert.ownerEmail">{{ cert.ownerEmail }}</div>
+        </td>
+        <td><span class="badge">{{ cert.version || 'N/A' }}</span></td>
+        <td class="date-col">{{ cert.issueDate ? (cert.issueDate | date:'mediumDate') : '—' }}</td>
+        <td class="date-col">
+          <span [ngClass]="isExpiringSoon(cert.expiryDate) ? 'expiry-warn' : ''">
+            {{ cert.expiryDate ? (cert.expiryDate | date:'mediumDate') : '—' }}
+          </span>
+        </td>
+        <td class="actions">
+          <button
+            class="btn-sm"
+            [id]="'btn-edit-' + cert.id"
+            (click)="openEditModal(cert)"
+            title="Edit certification"
+          >✏️ Edit</button>
+          <button
+            class="btn-sm btn-danger"
+            [id]="'btn-delete-' + cert.id"
+            (click)="deleteCertification(cert.id)"
+            title="Delete certification"
+          >🗑️ Delete</button>
+        </td>
+      </tr>
+      <!-- Empty state -->
+      <tr *ngIf="displayedCertifications.length === 0">
+        <td colspan="6" class="empty-state">
+          <div class="empty-icon">📂</div>
+          <p *ngIf="searchTerm">No certifications match "<strong>{{ searchTerm }}</strong>". <a (click)="clearSearch()" class="link">Clear search</a></p>
+          <p *ngIf="!searchTerm">No certifications yet. <a (click)="openAddModal()" class="link">Add the first one!</a></p>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ===== CREATE / EDIT MODAL ===== -->
+<div class="modal-overlay" *ngIf="isModalOpen" (click)="closeModal()">
+  <div class="modal-content glass-card" (click)="$event.stopPropagation()">
+
+    <div class="modal-header">
+      <div>
+        <h2>{{ isEditMode ? '✏️ Edit Certification' : '+ New Certification' }}</h2>
+        <p class="modal-subtitle">{{ isEditMode ? 'Update the certification details below.' : 'Fill in the details to create a new certification.' }}</p>
+      </div>
+      <button class="close-btn" (click)="closeModal()" id="btn-close-modal">×</button>
+    </div>
+
+    <form (ngSubmit)="saveCertification()" #certForm="ngForm">
+
+      <div class="form-group">
+        <label for="f-name">Name <span class="required">*</span></label>
+        <input
+          id="f-name" type="text" name="name" required
+          [(ngModel)]="currentCert.name"
+          placeholder="e.g. AWS Certified Solutions Architect"
+          class="form-input"
+        >
+      </div>
+
+      <div class="form-group">
+        <label for="f-desc">Description</label>
+        <textarea
+          id="f-desc" name="description" rows="3"
+          [(ngModel)]="currentCert.description"
+          placeholder="Brief description of the certification..."
+          class="form-input"
+        ></textarea>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group half">
+          <label for="f-version">Version</label>
+          <input id="f-version" type="text" name="version" [(ngModel)]="currentCert.version" placeholder="e.g. v2.1" class="form-input">
+        </div>
+        <div class="form-group half">
+          <label for="f-validity">Validity (Days)</label>
+          <input id="f-validity" type="number" name="validityDays" [(ngModel)]="currentCert.validityDays" min="0" placeholder="365" class="form-input">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group half">
+          <label for="f-issue">Issue Date</label>
+          <input id="f-issue" type="date" name="issueDate" [(ngModel)]="currentCert.issueDate" class="form-input">
+        </div>
+        <div class="form-group half">
+          <label for="f-expiry">Expiry Date</label>
+          <input id="f-expiry" type="date" name="expiryDate" [(ngModel)]="currentCert.expiryDate" class="form-input">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="f-email">Owner Email</label>
+        <input id="f-email" type="email" name="ownerEmail" [(ngModel)]="currentCert.ownerEmail" placeholder="admin@domain.com" class="form-input">
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary" (click)="closeModal()" id="btn-cancel-modal">Cancel</button>
+        <button
+          id="btn-save-modal"
+          type="submit"
+          class="btn-primary"
+          [disabled]="certForm.invalid || isSaving"
+        >
+          <span *ngIf="isSaving" class="spinner-xs"></span>
+          {{ isSaving ? 'Saving...' : (isEditMode ? 'Update' : 'Create') }}
+        </button>
+      </div>
+    </form>
+
+  </div>
+</div>

@@ -1,0 +1,63 @@
+<div class="content-header animate-fade-in">
+  <div>
+    <h1>Dashboard Overview</h1>
+    <p class="text-muted">Real-time statistics for your certification platform</p>
+  </div>
+</div>
+
+<div class="stats-grid animate-fade-in">
+  <div class="stats-card glass-card">
+    <div class="stats-icon">📜</div>
+    <div class="stats-info">
+      <h3>{{ totalCertifications }}</h3>
+      <p>Total Certifications</p>
+    </div>
+  </div>
+  
+  <div class="stats-card glass-card">
+    <div class="stats-icon">✅</div>
+    <div class="stats-info">
+      <h3>{{ activeCertifications }}</h3>
+      <p>Active Certifications</p>
+    </div>
+  </div>
+
+  <div class="stats-card glass-card">
+    <div class="stats-icon">⚠️</div>
+    <div class="stats-info">
+      <h3>{{ expiringSoon }}</h3>
+      <p>Expiring Soon</p>
+    </div>
+  </div>
+</div>
+
+<div class="dashboard-content animate-fade-in" style="margin-top: 2rem;">
+  <div class="recent-activity glass-card">
+    <div class="card-header">
+      <h2>Recent Certifications</h2>
+      <button class="icon-btn" routerLink="/certifications">View All</button>
+    </div>
+    <table class="recent-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Version</th>
+          <th>Validity</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (cert of recentCertifications; track cert.id) {
+          <tr>
+            <td class="cert-name">{{ cert.name }}</td>
+            <td><span class="badge">{{ cert.version || 'v1.0' }}</span></td>
+            <td class="price">{{ cert.validityDays }} Days</td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="3" class="empty-text">No certifications found yet.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>

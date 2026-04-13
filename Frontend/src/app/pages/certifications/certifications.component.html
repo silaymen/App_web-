@@ -1,0 +1,104 @@
+<div class="certifications-page">
+  <div class="header-row">
+    <div class="header-content">
+      <h1>Manage Certifications</h1>
+      <div class="search-box">
+        <input type="text" [(ngModel)]="searchTerm" (ngModelChange)="onSearchChange()" placeholder="Search by name...">
+        <i class="search-icon">🔍</i>
+      </div>
+    </div>
+    <button class="btn-primary highlight" (click)="openAddModal()">+ Add New</button>
+  </div>
+  
+  <div *ngIf="error" class="alert warning">
+    {{ error }}
+  </div>
+
+  <div class="table-container" *ngIf="!loading">
+    <table>
+      <thead>
+        <tr>
+          <th (click)="onSort('id')" class="sortable">ID <span *ngIf="sortBy === 'id'">{{ sortDir === 'asc' ? '↑' : '↓' }}</span></th>
+          <th (click)="onSort('name')" class="sortable">Name <span *ngIf="sortBy === 'name'">{{ sortDir === 'asc' ? '↑' : '↓' }}</span></th>
+          <th (click)="onSort('version')" class="sortable">Version <span *ngIf="sortBy === 'version'">{{ sortDir === 'asc' ? '↑' : '↓' }}</span></th>
+          <th (click)="onSort('issueDate')" class="sortable">Issued <span *ngIf="sortBy === 'issueDate'">{{ sortDir === 'asc' ? '↑' : '↓' }}</span></th>
+          <th (click)="onSort('expiryDate')" class="sortable">Expires <span *ngIf="sortBy === 'expiryDate'">{{ sortDir === 'asc' ? '↑' : '↓' }}</span></th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let cert of certifications">
+          <td>#{{ cert.id }}</td>
+          <td class="cert-name">
+            {{ cert.name }}
+            <div class="subtext">{{ cert.ownerEmail }}</div>
+          </td>
+          <td><span class="badge">{{ cert.version || 'N/A' }}</span></td>
+          <td>{{ cert.issueDate | date:'mediumDate' }}</td>
+          <td>{{ cert.expiryDate | date:'mediumDate' }}</td>
+          <td class="actions">
+            <button class="btn-sm" (click)="openEditModal(cert)">Edit</button>
+            <button class="btn-sm btn-danger" (click)="deleteCertification(cert.id)">Delete</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  
+  <div *ngIf="loading" class="loading">Loading data from microservices...</div>
+</div>
+
+<div class="modal-overlay" *ngIf="isModalOpen" (click)="closeModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>{{ isEditMode ? 'Edit' : 'Create' }} Certification</h2>
+      <button class="close-btn" (click)="closeModal()">&times;</button>
+    </div>
+    
+    <form (ngSubmit)="saveCertification()" #certForm="ngForm">
+      
+      <div class="form-group">
+        <label>Name (Required)</label>
+        <input type="text" name="name" required [(ngModel)]="currentCert.name" placeholder="e.g. AWS Certified Architect">
+      </div>
+      
+      <div class="form-group">
+        <label>Description</label>
+        <textarea name="description" rows="3" [(ngModel)]="currentCert.description" placeholder="Short description..."></textarea>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group half">
+          <label>Version</label>
+          <input type="text" name="version" [(ngModel)]="currentCert.version" placeholder="e.g. v2.1">
+        </div>
+        <div class="form-group half">
+          <label>Validity (Days)</label>
+          <input type="number" name="validityDays" [(ngModel)]="currentCert.validityDays" placeholder="365">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group half">
+          <label>Issue Date</label>
+          <input type="date" name="issueDate" [(ngModel)]="currentCert.issueDate">
+        </div>
+        <div class="form-group half">
+          <label>Expiry Date</label>
+          <input type="date" name="expiryDate" [(ngModel)]="currentCert.expiryDate">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Owner Email</label>
+        <input type="email" name="ownerEmail" [(ngModel)]="currentCert.ownerEmail" placeholder="admin@domain.com">
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary" (click)="closeModal()">Cancel</button>
+        <button type="submit" class="btn-primary popup-save" [disabled]="certForm.invalid">Save</button>
+      </div>
+      
+    </form>
+  </div>
+</div>

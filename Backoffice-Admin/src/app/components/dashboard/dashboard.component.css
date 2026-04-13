@@ -1,0 +1,96 @@
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.stats-card {
+  padding: 2rem;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  transition: var(--transition);
+}
+
+.stats-card:hover {
+  transform: translateY(-5px);
+  background: rgba(45, 55, 72, 0.8);
+}
+
+.stats-icon {
+  font-size: 2.5rem;
+  width: 64px;
+  height: 64px;
+  background: rgba(99, 102, 241, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 16px;
+}
+
+.stats-info h3 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+
+.stats-info p {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.recent-activity {
+  padding: 2rem;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.recent-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.recent-table th {
+  text-align: left;
+  padding: 1rem;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--glass-border);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+}
+
+.recent-table td {
+  padding: 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.recent-table .cert-name {
+  font-weight: 500;
+}
+
+.recent-table .price {
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--secondary-color);
+  font-weight: 600;
+}
+
+.badge {
+  background: rgba(99, 102, 241, 0.1);
+  color: var(--primary-color);
+  padding: 0.2rem 0.6rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  border: 1px solid rgba(99, 102, 241, 0.2);
+}
+
+.empty-text {
+  text-align: center;
+  padding: 2rem !important;
+  color: var(--text-muted);
+}
