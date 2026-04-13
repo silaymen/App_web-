@@ -15,7 +15,12 @@ import { JobOffre } from '../../core/models/joboffre.model';
           <h2>Gestion des Offres d'Emploi</h2>
           <p class="text-muted">Gérer toutes les offres d'emploi depuis ce panneau.</p>
         </div>
-        <button class="btn btn-primary" (click)="openForm()">+ Nouvelle Offre</button>
+        <div class="d-flex gap-3 align-center">
+          <div class="search-box">
+            <input type="text" class="form-control" placeholder="Rechercher une offre..." [(ngModel)]="searchQuery" (input)="onSearch()">
+          </div>
+          <button class="btn btn-primary" (click)="openForm()">+ Nouvelle Offre</button>
+        </div>
       </div>
 
       <!-- Add/Edit Form Overlay -->
@@ -193,12 +198,26 @@ import { JobOffre } from '../../core/models/joboffre.model';
     .form-row .form-group {
       flex: 1;
     }
+    .search-box input {
+      min-width: 250px;
+      padding: 0.6rem 1rem;
+      border-radius: 20px;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(0,0,0,0.2);
+      color: white;
+      transition: var(--transition);
+    }
+    .search-box input:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
   `]
 })
 export class JobOffresManagementComponent implements OnInit {
   private jobOffreService = inject(JobOffreService);
 
   jobOffres: JobOffre[] = [];
+  searchQuery: string = '';
 
   showForm = false;
   editing = false;
@@ -213,6 +232,17 @@ export class JobOffresManagementComponent implements OnInit {
       next: (data) => this.jobOffres = data,
       error: (err) => console.error(err)
     });
+  }
+
+  onSearch() {
+    if (this.searchQuery.trim() === '') {
+      this.loadAll();
+    } else {
+      this.jobOffreService.searchByName(this.searchQuery).subscribe({
+        next: (data) => this.jobOffres = data,
+        error: (err) => console.error(err)
+      });
+    }
   }
 
   getEmptyForm(): JobOffre {

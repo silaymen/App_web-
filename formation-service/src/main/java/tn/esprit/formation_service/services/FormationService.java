@@ -57,7 +57,7 @@ public class FormationService {
     }
 
     public Page<Formation> getActiveFormations(int page, int size) {
-        return repository.findByActiveTrue(PageRequest.of(page, size));
+        return repository.findPublishedForCatalog(PageRequest.of(page, size));
     }
 
     public List<Formation> searchByTitle(String title) {

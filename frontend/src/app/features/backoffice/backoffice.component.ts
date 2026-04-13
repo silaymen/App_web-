@@ -6,11 +6,18 @@ import { FormationService } from '../../core/services/formation.service';
 import { Formation } from '../../core/models/formation.model';
 import { SeancesManagementComponent } from './seances-management.component';
 import { JobOffresManagementComponent } from './joboffres-management.component';
+import { CertificationsManagementComponent } from './certifications-management.component';
 
 @Component({
   selector: 'app-backoffice',
   standalone: true,
-  imports: [CommonModule, FormsModule, SeancesManagementComponent, JobOffresManagementComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    SeancesManagementComponent,
+    JobOffresManagementComponent,
+    CertificationsManagementComponent
+  ],
   template: `
     <div class="container admin-container">
       <!-- Navigation Tabs -->
@@ -32,6 +39,12 @@ import { JobOffresManagementComponent } from './joboffres-management.component';
           [class.active]="activeTab === 'joboffres'"
           (click)="activeTab = 'joboffres'">
           💼 Offres d'Emploi
+        </button>
+        <button 
+          class="tab-btn" 
+          [class.active]="activeTab === 'certifications'"
+          (click)="activeTab = 'certifications'">
+          🏅 Certifications
         </button>
       </div>
 
@@ -158,6 +171,9 @@ import { JobOffresManagementComponent } from './joboffres-management.component';
 
       <!-- Job Offres Tab -->
       <app-joboffres-management *ngIf="activeTab === 'joboffres'"></app-joboffres-management>
+
+      <!-- Certifications (Web.rar / ami) -->
+      <app-certifications-management *ngIf="activeTab === 'certifications'"></app-certifications-management>
     </div>
   `,
   styles: [`
@@ -301,7 +317,7 @@ import { JobOffresManagementComponent } from './joboffres-management.component';
 export class BackofficeComponent implements OnInit, OnDestroy {
   private formationService = inject(FormationService);
 
-  activeTab: 'formations' | 'seances' | 'joboffres' = 'formations';
+  activeTab: 'formations' | 'seances' | 'joboffres' | 'certifications' = 'formations';
   /** Source list from the API (full list or active page). */
   allFormations: Formation[] = [];
   /** Rows shown after local filters. */

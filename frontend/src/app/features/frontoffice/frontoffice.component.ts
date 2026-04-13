@@ -5,9 +5,11 @@ import { Subject, Subscription, debounceTime } from 'rxjs';
 import { FormationService } from '../../core/services/formation.service';
 import { SeanceService } from '../../core/services/seance.service';
 import { JobOffreService } from '../../core/services/joboffre.service';
+import { CertificationService } from '../../core/services/certification.service';
 import { Formation } from '../../core/models/formation.model';
 import { Seance } from '../../core/models/seance.model';
 import { JobOffre } from '../../core/models/joboffre.model';
+import { Certification } from '../../core/models/certification.model';
 
 @Component({
   selector: 'app-frontoffice',
@@ -16,7 +18,7 @@ import { JobOffre } from '../../core/models/joboffre.model';
   template: `
     <div class="hero mb-5 text-center">
       <h1 class="hero-title">Discover Your Next <span class="text-accent">Skill</span></h1>
-      <p class="hero-subtitle text-muted">Join our premium formations, check schedules, and find your dream job.</p>
+      <p class="hero-subtitle text-muted">Join our premium formations, check schedules, job offers, and certifications.</p>
     </div>
 
     <div class="container">
@@ -39,6 +41,12 @@ import { JobOffre } from '../../core/models/joboffre.model';
           [class.active]="activeSection === 'jobs'"
           (click)="activeSection = 'jobs'">
           💼 Offres d'Emploi
+        </button>
+        <button 
+          class="tab-btn" 
+          [class.active]="activeSection === 'certs'"
+          (click)="activeSection = 'certs'; loadCertifications()">
+          🏅 Certifications
         </button>
       </div>
 
@@ -166,6 +174,33 @@ import { JobOffre } from '../../core/models/joboffre.model';
         <ng-template #noJobs>
           <div class="text-center text-muted mt-4 p-4 glass-panel">
             <p>💼 No job offers available at the moment.</p>
+          </div>
+        </ng-template>
+      </div>
+
+      <!-- Certifications (lecture seule — création / édition dans Admin Desk) -->
+      <div *ngIf="activeSection === 'certs'">
+        <p class="text-muted mb-3" style="font-size:0.95rem;">
+          Catalogue des certifications (API via la passerelle). Pour ajouter ou modifier, utilisez <strong>Admin Desk</strong> → onglet Certifications.
+        </p>
+        <div class="jobs-list" *ngIf="certifications.length > 0; else noCerts">
+          <div class="glass-card job-card cert-card" *ngFor="let c of certifications">
+            <div class="job-header">
+              <div>
+                <h3 class="card-title mb-1">{{ c.name }}</h3>
+                <span class="badge badge-purple" *ngIf="c.version">{{ c.version }}</span>
+              </div>
+            </div>
+            <p class="card-desc text-muted mb-2" *ngIf="c.description">{{ c.description }}</p>
+            <div class="job-footer d-flex justify-between align-center flex-wrap gap-2">
+              <span class="job-date text-muted" *ngIf="c.issueDate">📅 {{ c.issueDate | date:'dd/MM/yyyy' }} → {{ c.expiryDate | date:'dd/MM/yyyy' }}</span>
+              <span class="text-muted" *ngIf="c.ownerEmail" style="font-size:0.9rem;">✉️ {{ c.ownerEmail }}</span>
+            </div>
+          </div>
+        </div>
+        <ng-template #noCerts>
+          <div class="text-center text-muted mt-4 p-4 glass-panel">
+            <p>🏅 No certifications listed yet.</p>
           </div>
         </ng-template>
       </div>
@@ -413,14 +448,16 @@ export class FrontofficeComponent implements OnInit, OnDestroy {
   private formationService = inject(FormationService);
   private seanceService = inject(SeanceService);
   private jobOffreService = inject(JobOffreService);
+  private certificationService = inject(CertificationService);
 
-  activeSection: 'formations' | 'schedule' | 'jobs' = 'formations';
+  activeSection: 'formations' | 'schedule' | 'jobs' | 'certs' = 'formations';
 
   /** Active formations from API (catalog source). */
   private formationsCatalog: Formation[] = [];
   formations: Formation[] = [];
   seances: Seance[] = [];
   jobOffres: JobOffre[] = [];
+  certifications: Certification[] = [];
 
   searchQuery: string = '';
   selectedCategory: string = '';
@@ -439,6 +476,7 @@ export class FrontofficeComponent implements OnInit, OnDestroy {
     this.loadFormations();
     this.loadSeances();
     this.loadJobOffres();
+    this.loadCertifications();
   }
 
   ngOnDestroy() {
@@ -517,6 +555,16 @@ export class FrontofficeComponent implements OnInit, OnDestroy {
     this.jobOffreService.getAll().subscribe({
       next: (data) => this.jobOffres = data,
       error: (err) => console.error(err)
+    });
+  }
+
+  loadCertifications() {
+    this.certificationService.getCertifications('', 'id', 'asc').subscribe({
+      next: (data) => (this.certifications = data ?? []),
+      error: (err) => {
+        console.error(err);
+        this.certifications = [];
+      }
     });
   }
 }

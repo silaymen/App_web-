@@ -31,4 +31,8 @@ export class JobOffreService {
   delete(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
+
+  searchByName(name: string): Observable<JobOffre[]> {
+    return this.http.get<JobOffre[]>(`${this.apiUrl}/search?name=${name}`);
+  }
 }

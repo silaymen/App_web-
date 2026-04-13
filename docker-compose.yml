@@ -19,7 +19,7 @@ services:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: ezlearning_formation_db
     ports:
-      - "3307:3306"
+      - "3306:3306"
     volumes:
       - mysql-data:/var/lib/mysql
     networks:
@@ -214,7 +214,35 @@ services:
       api-gateway:
         condition: service_healthy
 
-  # ── 9. Angular frontend ────────────────────────────────────────────────────
+  # ── 9. Certifications (no host port — use gateway /certifications/**) ─────
+  certification-service:
+    build:
+      context: ./certifications-service
+      dockerfile: Dockerfile
+    image: ezlearning/certification-service:latest
+    container_name: certification-service
+    restart: unless-stopped
+    environment:
+      - JAVA_TOOL_OPTIONS=-Xmx256m -Xms64m
+      - SERVER_PORT=8091
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/ezlearning_certifications_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=root
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+      - SPRING_CONFIG_IMPORT=optional:configserver:http://config-server:8888
+
+    networks:
+      - ezlearning-net
+    mem_limit: 512m
+    depends_on:
+      mysql:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+      api-gateway:
+        condition: service_healthy
+
+  # ── 10. Angular frontend ───────────────────────────────────────────────────
   # API from browser: http://localhost:8000 (gateway). UI: http://localhost:4200
   frontend:
     build:
@@ -231,3 +259,5 @@ services:
     depends_on:
       api-gateway:
         condition: service_healthy
+      certification-service:
+        condition: service_started

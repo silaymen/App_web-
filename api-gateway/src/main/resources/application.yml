@@ -16,6 +16,8 @@ spring:
         locator:
           enabled: true
           lower-case-service-id: true
+      default-filters:
+        - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials, RETAIN_UNIQUE
       globalcors:
         corsConfigurations:
           '[/**]':
@@ -27,6 +29,7 @@ spring:
               - DELETE
               - OPTIONS
             allowedHeaders: "*"
+            allowCredentials: false
       routes:
         - id: formation-service
           uri: lb://formation-service
@@ -44,6 +47,10 @@ spring:
           uri: lb://joboffre-service
           predicates:
             - Path=/joboffers/**
+        - id: certification-service
+          uri: lb://certification-service
+          predicates:
+            - Path=/certifications/**
 
 eureka:
   client:
@@ -51,7 +58,6 @@ eureka:
     fetch-registry: true
     service-url:
       defaultZone: ${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE:http://localhost:8761/eureka/}
-
   instance:
     prefer-ip-address: true
 
