@@ -1,0 +1,130 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --bg-primary: #020617;
+  --primary: #6366f1;
+  --accent: #d946ef;
+  --text-main: #f8fafc;
+  --glass-bg: rgba(15, 23, 42, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.12);
+  --glass-blur: blur(16px);
+}
+
+body {
+  font-family: 'Outfit', sans-serif !important;
+  background: radial-gradient(circle at 0% 0%, #1e1b4b 0%, transparent 40%),
+              radial-gradient(circle at 100% 0%, #312e81 0%, transparent 40%),
+              radial-gradient(circle at 100% 100%, #1e1b4b 0%, transparent 40%),
+              radial-gradient(circle at 0% 100%, #312e81 0%, transparent 40%),
+              #020617 !important;
+  color: var(--text-main) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-height: 100vh !important;
+  margin: 0 !important;
+}
+
+#kc-container-wrapper {
+  width: 100% !important;
+  max-width: 500px !important;
+  margin: 2rem auto !important;
+}
+
+/* For registration page which might need more space but still centered */
+.login-pf-page.register #kc-container-wrapper {
+  max-width: 650px !important;
+}
+
+#kc-header-wrapper {
+  color: var(--text-main) !important;
+  font-size: 2.2rem !important;
+  font-weight: 700 !important;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 2rem;
+  text-align: center !important;
+  text-shadow: 0 0 20px rgba(99, 102, 241, 0.5);
+}
+
+.card-pf {
+  background: var(--glass-bg) !important;
+  backdrop-filter: var(--glass-blur) !important;
+  -webkit-backdrop-filter: var(--glass-blur) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: 28px !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7),
+              0 0 0 1px rgba(255, 255, 255, 0.05) !important;
+  padding: 3rem !important;
+  width: 100% !important;
+}
+
+#kc-page-title {
+  color: white !important;
+  font-weight: 700 !important;
+  font-size: 1.6rem !important;
+  margin-bottom: 2rem !important;
+  text-align: center !important;
+}
+
+.form-group {
+  margin-bottom: 1.5rem !important;
+}
+
+.form-group label {
+  color: #94a3b8 !important;
+  font-weight: 500 !important;
+  margin-bottom: 0.5rem !important;
+  display: block !important;
+}
+
+input.form-control {
+  background: rgba(0, 0, 0, 0.4) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 14px !important;
+  color: white !important;
+  padding: 14px 18px !important;
+  height: auto !important;
+  font-size: 1rem !important;
+  width: 100% !important;
+}
+
+input.form-control:focus {
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2) !important;
+}
+
+#kc-login {
+  background: linear-gradient(135deg, var(--primary), var(--accent)) !important;
+  border: none !important;
+  border-radius: 12px !important;
+  font-weight: 700 !important;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  padding: 14px !important;
+  margin-top: 1rem !important;
+  transition: all 0.3s ease !important;
+  box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4) !important;
+}
+
+#kc-login:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.1);
+  box-shadow: 0 8px 25px rgba(99, 102, 241, 0.5) !important;
+}
+
+#kc-registration span a {
+  color: var(--accent) !important;
+  font-weight: 600 !important;
+}
+
+#kc-registration span a:hover {
+  text-decoration: underline !important;
+}
+
+.alert-error {
+  background: rgba(239, 68, 68, 0.1) !important;
+  border: 1px solid rgba(239, 68, 68, 0.2) !important;
+  border-radius: 10px !important;
+  color: #fca5a5 !important;
+}

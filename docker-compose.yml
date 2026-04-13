@@ -297,6 +297,7 @@ services:
       - "8180:8080"
     volumes:
       - keycloak-data:/opt/keycloak/data
+      - ./keycloak-theme/ezlearning:/opt/keycloak/themes/ezlearning
     networks:
       - ezlearning-net
     healthcheck:
