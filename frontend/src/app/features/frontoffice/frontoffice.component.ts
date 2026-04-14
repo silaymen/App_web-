@@ -10,6 +10,8 @@ import { Formation } from '../../core/models/formation.model';
 import { Seance } from '../../core/models/seance.model';
 import { JobOffre } from '../../core/models/joboffre.model';
 import { Certification } from '../../core/models/certification.model';
+import { HackathonService } from '../../core/services/hackathon.service';
+import { Hackathon } from '../../core/models/hackathon.model';
 
 @Component({
   selector: 'app-frontoffice',
@@ -57,6 +59,12 @@ import { Certification } from '../../core/models/certification.model';
               [class.active]="activeSection === 'certs'"
               (click)="activeSection = 'certs'; loadCertifications()">
               <span class="icon">🏅</span> Certs
+            </button>
+            <button 
+              class="pill-btn" 
+              [class.active]="activeSection === 'hackathons'"
+              (click)="activeSection = 'hackathons'; loadHackathons()">
+              <span class="icon">🚀</span> Hackathons
             </button>
           </div>
         </div>
@@ -196,10 +204,37 @@ import { Certification } from '../../core/models/certification.model';
           </div>
         </div>
 
+        <!-- Hackathons Section -->
+        <div *ngIf="activeSection === 'hackathons'" class="section-fade-in">
+          <div class="grid" *ngIf="hackathons.length > 0; else noHackathons">
+            <div class="glass-card premium-hover" *ngFor="let h of hackathons">
+              <div class="card-brand-strip">
+                <span class="badge badge-primary">{{h.category}}</span>
+                <div class="highlight-text">LIVE</div>
+              </div>
+              <div class="card-content-stack">
+                <h3 class="card-title">{{h.title}}</h3>
+                <p class="card-description">{{h.description}}</p>
+                <div class="info-cloud">
+                  <span class="info-tag">📍 {{h.location}}</span>
+                  <span class="info-tag">📅 {{h.startDate | date:'mediumDate'}}</span>
+                </div>
+              </div>
+              <div class="card-footer-strip">
+                <div class="status-indicator">
+                  <span class="dot-pulse green"></span> Registration Open
+                </div>
+                <button class="btn btn-glow btn-sm">Join Event</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- Fallback templates -->
         <ng-template #noFormations><div class="empty-state glass-panel">📚 No courses found matching your criteria.</div></ng-template>
         <ng-template #noSeances><div class="empty-state glass-panel">📅 No scheduled sessions found.</div></ng-template>
         <ng-template #noJobs><div class="empty-state glass-panel">💼 No job opportunities at moment.</div></ng-template>
+        <ng-template #noHackathons><div class="empty-state glass-panel">🚀 No hackathons scheduled yet.</div></ng-template>
       </div>
     </div>
   `,
@@ -437,8 +472,9 @@ export class FrontofficeComponent implements OnInit, OnDestroy {
   private seanceService = inject(SeanceService);
   private jobOffreService = inject(JobOffreService);
   private certificationService = inject(CertificationService);
+  private hackathonService = inject(HackathonService);
 
-  activeSection: 'formations' | 'schedule' | 'jobs' | 'certs' = 'formations';
+  activeSection: 'formations' | 'schedule' | 'jobs' | 'certs' | 'hackathons' = 'formations';
 
   /** Active formations from API (catalog source). */
   private formationsCatalog: Formation[] = [];
@@ -446,6 +482,7 @@ export class FrontofficeComponent implements OnInit, OnDestroy {
   seances: Seance[] = [];
   jobOffres: JobOffre[] = [];
   certifications: Certification[] = [];
+  hackathons: Hackathon[] = [];
 
   searchQuery: string = '';
   selectedCategory: string = '';
@@ -465,6 +502,7 @@ export class FrontofficeComponent implements OnInit, OnDestroy {
     this.loadSeances();
     this.loadJobOffres();
     this.loadCertifications();
+    this.loadHackathons();
   }
 
   ngOnDestroy() {
@@ -553,6 +591,13 @@ export class FrontofficeComponent implements OnInit, OnDestroy {
         console.error(err);
         this.certifications = [];
       }
+    });
+  }
+
+  loadHackathons() {
+    this.hackathonService.getAll().subscribe({
+      next: (data) => this.hackathons = data,
+      error: (err) => console.error('Error loading hackathons:', err)
     });
   }
 }

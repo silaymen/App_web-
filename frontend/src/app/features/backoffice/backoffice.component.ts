@@ -8,6 +8,7 @@ import { SeancesManagementComponent } from './seances-management.component';
 import { JobOffresManagementComponent } from './joboffres-management.component';
 import { CertificationsManagementComponent } from './certifications-management.component';
 import { UsersManagementComponent } from './users-management.component';
+import { HackathonsManagementComponent } from './hackathons-management.component';
 
 @Component({
   selector: 'app-backoffice',
@@ -18,7 +19,8 @@ import { UsersManagementComponent } from './users-management.component';
     SeancesManagementComponent,
     JobOffresManagementComponent,
     CertificationsManagementComponent,
-    UsersManagementComponent
+    UsersManagementComponent,
+    HackathonsManagementComponent
   ],
   template: `
     <div class="admin-wrapper animate-fade-in">
@@ -64,6 +66,12 @@ import { UsersManagementComponent } from './users-management.component';
             [class.active]="activeTab === 'users'"
             (click)="activeTab = 'users'">
             👥 Users
+          </button>
+          <button 
+            class="pill-btn" 
+            [class.active]="activeTab === 'hackathons'"
+            (click)="activeTab = 'hackathons'">
+            🚀 Hackathons
           </button>
         </div>
 
@@ -139,6 +147,7 @@ import { UsersManagementComponent } from './users-management.component';
         <app-joboffres-management *ngIf="activeTab === 'joboffres'"></app-joboffres-management>
         <app-certifications-management *ngIf="activeTab === 'certifications'"></app-certifications-management>
         <app-users-management *ngIf="activeTab === 'users'"></app-users-management>
+        <app-hackathons-management *ngIf="activeTab === 'hackathons'"></app-hackathons-management>
       </div>
 
       <!-- Modal Overlay -->
@@ -364,7 +373,7 @@ import { UsersManagementComponent } from './users-management.component';
 export class BackofficeComponent implements OnInit, OnDestroy {
   private formationService = inject(FormationService);
 
-  activeTab: 'formations' | 'seances' | 'joboffres' | 'certifications' | 'users' = 'formations';
+  activeTab: 'formations' | 'seances' | 'joboffres' | 'certifications' | 'users' | 'hackathons' = 'formations';
   /** Source list from the API (full list or active page). */
   allFormations: Formation[] = [];
   /** Rows shown after local filters. */

@@ -342,3 +342,36 @@ services:
         condition: service_healthy
       api-gateway:
         condition: service_healthy
+
+  # ── 13. Hackathon Service ──────────────────────────────────────────────────
+  hackathon-service:
+    build:
+      context: ./hackathon-service
+      dockerfile: Dockerfile
+    image: ezlearning/hackathon-service:latest
+    container_name: hackathon-service
+    restart: unless-stopped
+    environment:
+      - JAVA_TOOL_OPTIONS=-Xmx256m -Xms64m
+      - SERVER_PORT=8086
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/ezlearning_hackathon_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=root
+      - SPRING_RABBITMQ_HOST=rabbitmq
+      - SPRING_RABBITMQ_PORT=5672
+      - SPRING_RABBITMQ_USERNAME=guest
+      - SPRING_RABBITMQ_PASSWORD=guest
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+      - SPRING_CONFIG_IMPORT=optional:configserver:http://config-server:8888
+    networks:
+      - ezlearning-net
+    mem_limit: 512m
+    depends_on:
+      mysql:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+      api-gateway:
+        condition: service_healthy
